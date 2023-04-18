@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, jsonify, request
 import cv2
 import numpy as np
 from preprocess1 import Pr
@@ -24,7 +24,7 @@ model = torch.load('my_model130(2).pth', map_location=torch.device('cpu'))
 app = Flask(__name__)
 
 @app.route('/')
-def main():
+def hello_world():
         prev = "name is"
         
         # Retrieve the uploaded file from the request
@@ -56,8 +56,9 @@ def main():
                     # Get the predicted label and add it to the list of predicted labels
                     pred_label = classes1[torch.max(prediction, dim=1)[1]]
 
-        return pred_label
-
+        return jsonify({
+        "message": "Hello World."
+    })
 
 if __name__ == '__main__':
     app.run()
