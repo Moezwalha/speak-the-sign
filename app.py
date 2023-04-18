@@ -1,16 +1,11 @@
-from flask import Flask, jsonify, request
+from flask import Flask, request, jsonify
 import cv2
 import numpy as np
 from preprocess1 import Pr
 from preprocess2 import test_transforms
 from preprocess4 import Pr1
-import PIL
 import torch
-from torchvision import models
-import torch.nn as nn
-import os
 from PIL import Image
-import io
 
 classes = ["but","clear","ear","experiencing","fever","have been","hearing","in","a lot of"," I","my","name is","no","is not","pain","right","thank you"]
 # List of alphabet letters
@@ -24,7 +19,7 @@ model = torch.load('my_model130(2).pth', map_location=torch.device('cpu'))
 app = Flask(__name__)
 
 @app.route('/')
-def hello_world():
+def main():
         prev = "name is"
         
         # Retrieve the uploaded file from the request
@@ -36,7 +31,7 @@ def hello_world():
                 p1 = Pr(frame)
                 two_hands_detected, processed_frame = p1.detect_crop_and_segment_hands(p1.image)
                 if processed_frame is not None: 
-                    cropped_hand_array = PIL.Image.fromarray(processed_frame)
+                    cropped_hand_array = Image.fromarray(processed_frame)
                     # Apply the transformations
                     img_tensor = test_transforms(cropped_hand_array)
                     #Make a prediction using the model
@@ -48,7 +43,7 @@ def hello_world():
                 p2 = Pr1(frame)
                 cropped_hand = p2.detect_crop_and_segment_hands(frame)
                 if cropped_hand.shape != frame.shape or   np.allclose(cropped_hand, frame):
-                    cropped_hand_array = PIL.Image.fromarray(cropped_hand)
+                    cropped_hand_array = Image.fromarray(cropped_hand)
                     # Apply the transformations
                     img_tensor = test_transforms(cropped_hand_array)      
                     #Make a prediction using the model
@@ -57,8 +52,9 @@ def hello_world():
                     pred_label = classes1[torch.max(prediction, dim=1)[1]]
 
         return jsonify({
-        "message": "Hello World."
-    })
+              "message": pred_label
+        })
+
 
 if __name__ == '__main__':
     app.run()
